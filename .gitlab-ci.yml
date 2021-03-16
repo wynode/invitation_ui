@@ -1,0 +1,56 @@
+image: hub.qixincha.com/gitlab-runner-fe-env
+#所有作业之前操作
+before_script:
+  - eval $(ssh-agent -s)
+  - ssh-add <(echo "$SSH_PRIVATE_KEY")
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+
+stages:
+  # - install_deps
+  # - deploy_test
+  # - deploy_prod
+  - deploy_k8s
+
+#缓存启用
+cache:
+  key: ${CI_BUILD_REF_NAME}
+  paths:
+    - node_modules/
+
+# 依赖安装
+# install_deps:
+#   stage: install_deps
+#   only:
+#     - dev@weixin/wx_lottery_card
+#     - master@weixin/wx_lottery_card
+#   script:
+#     - yarn
+
+# 测试环境发布
+# deploy_test:
+#   stage: deploy_test
+#   only:
+#   - dev@weixin/wx_lottery_card
+#   script:
+#     - yarn publish:dev
+
+# 正式环境发布
+# deploy_prod:
+#   stage: deploy_prod
+#   only:
+#   - master@weixin/wx_lottery_card
+#   script:
+#     - yarn
+#     - yarn publish:prod
+#   when: manual
+
+# 发布到k8s
+deploy_k8s:
+  stage: deploy_k8s
+  only:
+  - master@weixin/wx_lottery_card
+  script:
+    - yarn
+    - yarn publish:k8s
+  when: manual
